@@ -785,9 +785,14 @@ var PRISTINE_CLASS = 'ng-pristine',
         }
 
         function parser(viewValue) {
-          if (viewValue.length === format.length) {
-            return viewValue;
+          var parsed = moment(viewValue, format, true);
+          if (parsed.isValid()) {
+              ngModel.$setValidity('datetime', true);
+              return parsed;
           }
+
+          ngModel.$setValidity('datetime', viewValue.length === 0);
+
           return (viewValue.length === 0) ? viewValue : undefined;
         }
 

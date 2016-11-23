@@ -61,7 +61,11 @@ Module.directive('datePicker', ['datePickerConfig', 'datePickerUtils', function 
       function getDate(name) {
         return datePickerUtils.getDate(scope, attrs, name);
       }
-
+	  
+	  function getDates(name) {
+	  	return datePickerUtils.getDates(scope, attrs, name);
+	  }
+		
       var arrowClick = false,
         tz = scope.tz = attrs.timezone,
         createMoment = datePickerUtils.createMoment,
@@ -70,6 +74,7 @@ Module.directive('datePicker', ['datePickerConfig', 'datePickerUtils', function 
         partial = !!attrs.partial,
         minDate = getDate('minDate'),
         maxDate = getDate('maxDate'),
+		dateOptions = getDates('dateOptions'),
         pickerID = element[0].id,
         now = scope.now = createMoment(),
         selected = scope.date = createMoment(scope.model || now),
@@ -109,10 +114,14 @@ Module.directive('datePicker', ['datePickerConfig', 'datePickerUtils', function 
         if (isSame(scope.date, date)) {
           date = scope.date;
         }
+        if (dateOptions && !dateOptions.some((o) => o.isSame(date, 'day'))) {
+          return false;
+        }		
         date = clipDate(date);
         if (!date) {
           return false;
         }
+		  
         scope.date = date;
 
         var nextView = scope.views[scope.views.indexOf(scope.view) + 1];
@@ -278,6 +287,9 @@ Module.directive('datePicker', ['datePickerConfig', 'datePickerUtils', function 
         if (maxDate && maxDate.isBefore(date)) {
           valid &= isSame(maxDate, date);
         }
+        if (dateOptions) {
+          valid &= dateOptions.some((o) => o.isSame(date, 'day'));
+        }		
         return valid;
       };
 
@@ -334,7 +346,11 @@ Module.directive('datePicker', ['datePickerConfig', 'datePickerUtils', function 
               maxDate = data.maxDate ? data.maxDate : false;
               updateViewData = true;
             }
-
+            if (angular.isDefined(data.dateOptions)) {
+                dateOptions = data.dateOptions ? data.dateOptions : false;
+                updateViewData = true;
+            }
+			  
             if (angular.isDefined(data.minView)) {
               attrs.minView = data.minView;
               updateViews = true;

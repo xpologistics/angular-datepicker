@@ -6,7 +6,9 @@ Module.directive('dateRange', ['$compile', 'datePickerUtils', 'dateTimeConfig', 
     return dateTimeConfig.template(angular.extend(attrs, {
       ngModel: model,
       minDate: min && moment.isMoment(min) ? min.format() : false,
-      maxDate: max && moment.isMoment(max) ? max.format() : false
+      maxDate: max && moment.isMoment(max) ? max.format() : false,
+	  dateOptions: dateOptions && dateOptions.length && !dateOptions.some(function(d){ return !moment.isMoment(d); }) ? 
+		dateOptions.map(function(d) { return d.format(); }) : false
     }), id);
   }
 
@@ -44,7 +46,16 @@ Module.directive('dateRange', ['$compile', 'datePickerUtils', 'dateTimeConfig', 
           minDate: date
         });
       }
-
+	  
+      function setOptions(dates) {
+        scope.$broadcast('pickerUpdate', pickerIDs[0], {
+          dateOptions: dates
+        });
+        scope.$broadcast('pickerUpdate', pickerIDs[1], {
+          dateOptions: dates
+        });      
+      }
+		
       if (pickerRangeID) {
         scope.$on('pickerUpdate', function (event, targetIDs, data) {
           if (eventIsForPicker(targetIDs, pickerRangeID)) {

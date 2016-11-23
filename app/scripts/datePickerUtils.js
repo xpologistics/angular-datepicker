@@ -221,6 +221,32 @@ angular.module('datePicker').factory('datePickerUtils', function () {
 
       return result;
     },
+    getDates: function (scope, attrs, name) {
+        var result = false;
+        if (attrs[name]) {
+          result = attrs[name].split(',').filter(function(d) {
+            return this.createMoment(d).isValid();
+          }, this).map(function (fd) {
+            return this.createMoment(fd);
+          }, this);
+        
+        if (!result.length) {
+          result = this.findParam(scope, attrs[name]);
+          if (result) {
+            result = result.split(',').filter(function (d) {
+              return this.createMoment(d).isValid();
+            }, this).map(function (fd) {
+              return this.createMoment(fd);
+            } , this);
+          }
+        }
+        
+        if (!result || !result.length) {
+          return false;
+        }
+        
+        return result;
+    },    
     //Checks if an event targeted at a specific picker, via either a string name, or an array of strings.
     eventIsForPicker: function (targetIDs, pickerID) {
       function matches(id) {

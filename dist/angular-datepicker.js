@@ -69,6 +69,10 @@ var Module = angular.module('datePicker', []);
           return datePickerUtils.getDate(scope, attrs, name);
         }
 
+        function getDates(name) {
+            return datePickerUtils.getDates(scope, attrs, name);
+        }
+
         var arrowClick = false,
           tz = scope.tz = attrs.timezone,
           createMoment = datePickerUtils.createMoment,
@@ -77,6 +81,7 @@ var Module = angular.module('datePicker', []);
           partial = !!attrs.partial,
           minDate = getDate('minDate'),
           maxDate = getDate('maxDate'),
+          dateOptions = getDates('dateOptions'),
           pickerID = element[0].id,
           now = scope.now = createMoment(),
           selected = scope.date = createMoment(scope.model || now),
@@ -116,10 +121,14 @@ var Module = angular.module('datePicker', []);
           if (isSame(scope.date, date)) {
             date = scope.date;
           }
+          if (dateOptions && !dateOptions.some((o) => o.isSame(date, 'day'))) {
+            return false;
+          }          
           date = clipDate(date);
           if (!date) {
             return false;
           }
+          
           scope.date = date;
 
           var nextView = scope.views[scope.views.indexOf(scope.view) + 1];
@@ -285,6 +294,10 @@ var Module = angular.module('datePicker', []);
           if (maxDate && maxDate.isBefore(date)) {
             valid &= isSame(maxDate, date);
           }
+          if (dateOptions) {
+            valid &= dateOptions.some((o) => o.isSame(date, 'day'));
+          }
+
           return valid;
         };
 
@@ -340,6 +353,10 @@ var Module = angular.module('datePicker', []);
               if (angular.isDefined(data.maxDate)) {
                 maxDate = data.maxDate ? data.maxDate : false;
                 updateViewData = true;
+              }
+              if (angular.isDefined(data.dateOptions)) {
+                  dateOptions = data.dateOptions ? data.dateOptions : false;
+                  updateViewData = true;
               }
 
               if (angular.isDefined(data.minView)) {
@@ -596,6 +613,33 @@ angular.module('datePicker').factory('datePickerUtils', function () {
 
         return result;
       },
+      getDates: function (scope, attrs, name) {
+          var result = false;
+          if (attrs[name]) {
+            result = attrs[name].split(',').filter(function(d) {
+                return this.createMoment(d).isValid();
+            }, this).map(function (fd) {
+                return this.createMoment(fd);
+            }, this);
+            
+            if (!result.length) {
+              result = this.findParam(scope, attrs[name]);
+              if (result) {
+                result = result.split(',').filter(function (d) {
+                  return this.createMoment(d).isValid();
+                }, this).map(function (fd) {
+                  return this.createMoment(fd);
+                } , this);
+              }
+            }
+          }
+          
+          if (!result || !result.length) {
+              return false;
+          }
+            
+          return result;
+      },
       eventIsForPicker: function (targetIDs, pickerID) {
         //Checks if an event targeted at a specific picker, via either a string name, or an array of strings.
         return (angular.isArray(targetIDs) && targetIDs.indexOf(pickerID) > -1 || targetIDs === pickerID);
@@ -614,11 +658,13 @@ angular.module('datePicker').factory('datePickerUtils', function () {
 var Module = angular.module('datePicker');
 
   Module.directive('dateRange', ['$compile', 'datePickerUtils', 'dateTimeConfig', function ($compile, datePickerUtils, dateTimeConfig) {
-    function getTemplate(attrs, id, model, min, max) {
+    function getTemplate(attrs, id, model, min, max, dateOptions) {
       return dateTimeConfig.template(angular.extend(attrs, {
         ngModel: model,
         minDate: min && moment.isMoment(min) ? min.format() : false,
-        maxDate: max && moment.isMoment(max) ? max.format() : false
+        maxDate: max && moment.isMoment(max) ? max.format() : false,
+        dateOptions: dateOptions && dateOptions.length && !dateOptions.some(function(d){ return !moment.isMoment(d); }) ? 
+            dateOptions.map(function(d) { return d.format(); }) : false
       }), id);
     }
 
@@ -655,6 +701,15 @@ var Module = angular.module('datePicker');
           scope.$broadcast('pickerUpdate', pickerIDs[1], {
             minDate: date
           });
+        }
+
+        function setOptions(dates) {
+          scope.$broadcast('pickerUpdate', pickerIDs[0], {
+            dateOptions: dates
+          });
+          scope.$broadcast('pickerUpdate', pickerIDs[1], {
+            dateOptions: dates
+          });      
         }
 
         if (pickerRangeID) {
@@ -727,7 +782,8 @@ var PRISTINE_CLASS = 'ng-pristine',
         (attrs.ngModel ? 'ng-model="' + attrs.ngModel + '" ' : '') +
         (attrs.firstDay ? 'first-day="' + attrs.firstDay + '" ' : '') +
         (attrs.timezone ? 'timezone="' + attrs.timezone + '" ' : '') +
-		(attrs.watchDirectChanges ? 'watch-direct-changes="' + attrs.watchDirectChanges + '" ' : '') +
+        (attrs.watchDirectChanges ? 'watch-direct-changes="' + attrs.watchDirectChanges + '" ' : '') +
+        (attrs.dateOptions ? 'date-options="' + attrs.dateOptions + '" ' : '') +
         'class="date-picker-date-time"></div>';
     },
     format: 'YYYY-MM-DD HH:mm',
@@ -768,6 +824,8 @@ var PRISTINE_CLASS = 'ng-pristine',
           minValid = null,
           maxDate = null,
           maxValid = null,
+          dateOptions = null,
+          dateOptionsValid = null,
           timezone = attrs.timezone || false,
           eventIsForPicker = datePickerUtils.eventIsForPicker,
           dateChange = null,
@@ -808,6 +866,12 @@ var PRISTINE_CLASS = 'ng-pristine',
           maxValid = moment.isMoment(date);
         }
 
+        function setDateOptions(options) {
+          dateOptions = options;
+          dateOptionsValid = dateOptions && dateOptions.length && !dateOptions.some(function(d) { return !moment.isMoment(d); });
+          attrs.dateOptions = dateOptionsValid ? dateOptions.map(function (d) { return d.format(); }) : dateOptions;
+        }
+
         ngModel.$formatters.push(formatter);
         ngModel.$parsers.unshift(parser);
 
@@ -826,6 +890,14 @@ var PRISTINE_CLASS = 'ng-pristine',
           ngModel.$validators.max = function (value) {
             return maxValid ? moment.isMoment(value) && (maxDate.isSame(value) || maxDate.isAfter(value)) : true;
           };
+        }
+
+        if (angular.isDefined(attrs.dateOptions)) {
+          setDateOptions(datePickerUtils.findParam(scope, attrs.dateOptions));
+
+          ngModel.$validators.dateOptions = function (value) {
+            return dateOptionsValid ? dateOptions.some(function (d) { return d.isSame(value, 'day'); }) : true;
+          }
         }
 
         if (angular.isDefined(attrs.dateChange)) {
@@ -876,6 +948,10 @@ var PRISTINE_CLASS = 'ng-pristine',
                 }
                 if (angular.isDefined(data.maxDate)) {
                   setMax(data.maxDate);
+                  validateRequired = true;
+                }
+                if (angular.isDefined(data.dateOptions)) {
+                  setDateOptions(data.dateOptions);
                   validateRequired = true;
                 }
 

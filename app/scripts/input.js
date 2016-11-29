@@ -23,8 +23,8 @@ Module.constant('dateTimeConfig', {
       (attrs.ngModel ? 'ng-model="' + attrs.ngModel + '" ' : '') +
       (attrs.firstDay ? 'first-day="' + attrs.firstDay + '" ' : '') +
       (attrs.timezone ? 'timezone="' + attrs.timezone + '" ' : '') +
-	  (attrs.watchDirectChanges ? 'watch-direct-changes="' + attrs.watchDirectChanges + '" ' : '') +
-	  (attrs.dateOptions ? 'date-options="' + attrs.dateOptions + '" ' : '') +
+      (attrs.watchDirectChanges ? 'watch-direct-changes="' + attrs.watchDirectChanges + '" ' : '') +
+      (attrs.dateOptions ? 'date-options="' + attrs.dateOptions + '" ' : '') +
       'class="date-picker-date-time"></div>';
   },
   format: 'YYYY-MM-DD HH:mm',
@@ -104,13 +104,13 @@ Module.directive('dateTime', ['$compile', '$document', '$filter', 'dateTimeConfi
         attrs.maxDate = date ? date.format() : date;
         maxValid = moment.isMoment(date);
       }
-	  
+      
       function setDateOptions(options) {
         dateOptions = options;
-		dateOptionsValid = dateOptions && dateOptions.length && !dateOptions.some(function(d) { return !moment.isMoment(d); });
+        dateOptionsValid = dateOptions && dateOptions.length && !dateOptions.some(function(d) { return !moment.isMoment(d); });
         attrs.dateOptions = dateOptionsValid ? dateOptions.map(function (d) { return d.format(); }) : dateOptions;
       }
-		
+        
       function setOptions(dateOptions) {
         scope.$broadcast('pickerUpdate', pickerIDs[0], {
           dateOptions: dateOptions
@@ -147,7 +147,7 @@ Module.directive('dateTime', ['$compile', '$document', '$filter', 'dateTimeConfi
           return dateOptionsValid ? dateOptions.some(function (d) { return d.isSame(value, 'day'); }) : true;
         }
       }
-		
+        
       if (angular.isDefined(attrs.dateChange)) {
         dateChange = datePickerUtils.findFunction(scope, attrs.dateChange);
       }

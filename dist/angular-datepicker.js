@@ -123,12 +123,12 @@ var Module = angular.module('datePicker', []);
           }
           if (dateOptions && !dateOptions.some((o) => o.isSame(date, 'day'))) {
             return false;
-          }		  
+          }          
           date = clipDate(date);
           if (!date) {
             return false;
           }
-		  
+          
           scope.date = date;
 
           var nextView = scope.views[scope.views.indexOf(scope.view) + 1];
@@ -617,27 +617,27 @@ angular.module('datePicker').factory('datePickerUtils', function () {
           var result = false;
           if (attrs[name]) {
             result = attrs[name].split(',').filter(function(d) {
-				return this.createMoment(d).isValid();
+                return this.createMoment(d).isValid();
             }, this).map(function (fd) {
-				return this.createMoment(fd);
-			}, this);
-			
-			if (!result.length) {
-			  result = this.findParam(scope, attrs[name]);
-			  if (result) {
-			    result = result.split(',').filter(function (d) {
-			      return this.createMoment(d).isValid();
-			    }, this).map(function (fd) {
-			      return this.createMoment(fd);
-			    } , this);
-			  }
-			}
+                return this.createMoment(fd);
+            }, this);
+            
+            if (!result.length) {
+              result = this.findParam(scope, attrs[name]);
+              if (result) {
+                result = result.split(',').filter(function (d) {
+                  return this.createMoment(d).isValid();
+                }, this).map(function (fd) {
+                  return this.createMoment(fd);
+                } , this);
+              }
+            }
           }
-		  
-		  if (!result || !result.length) {
-			  return false;
-		  }
-			
+          
+          if (!result || !result.length) {
+              return false;
+          }
+            
           return result;
       },
       eventIsForPicker: function (targetIDs, pickerID) {
@@ -663,8 +663,8 @@ var Module = angular.module('datePicker');
         ngModel: model,
         minDate: min && moment.isMoment(min) ? min.format() : false,
         maxDate: max && moment.isMoment(max) ? max.format() : false,
-	    dateOptions: dateOptions && dateOptions.length && !dateOptions.some(function(d){ return !moment.isMoment(d); }) ? 
-			dateOptions.map(function(d) { return d.format(); }) : false
+        dateOptions: dateOptions && dateOptions.length && !dateOptions.some(function(d){ return !moment.isMoment(d); }) ? 
+            dateOptions.map(function(d) { return d.format(); }) : false
       }), id);
     }
 
@@ -782,7 +782,7 @@ var PRISTINE_CLASS = 'ng-pristine',
         (attrs.ngModel ? 'ng-model="' + attrs.ngModel + '" ' : '') +
         (attrs.firstDay ? 'first-day="' + attrs.firstDay + '" ' : '') +
         (attrs.timezone ? 'timezone="' + attrs.timezone + '" ' : '') +
-		(attrs.watchDirectChanges ? 'watch-direct-changes="' + attrs.watchDirectChanges + '" ' : '') +
+        (attrs.watchDirectChanges ? 'watch-direct-changes="' + attrs.watchDirectChanges + '" ' : '') +
         (attrs.dateOptions ? 'date-options="' + attrs.dateOptions + '" ' : '') +
         'class="date-picker-date-time"></div>';
     },
@@ -825,7 +825,7 @@ var PRISTINE_CLASS = 'ng-pristine',
           maxDate = null,
           maxValid = null,
           dateOptions = null,
-		  dateOptionsValid = null,
+          dateOptionsValid = null,
           timezone = attrs.timezone || false,
           eventIsForPicker = datePickerUtils.eventIsForPicker,
           dateChange = null,
@@ -868,7 +868,7 @@ var PRISTINE_CLASS = 'ng-pristine',
 
         function setDateOptions(options) {
           dateOptions = options;
-		  dateOptionsValid = dateOptions && dateOptions.length && !dateOptions.some(function(d) { return !moment.isMoment(d); });
+          dateOptionsValid = dateOptions && dateOptions.length && !dateOptions.some(function(d) { return !moment.isMoment(d); });
           attrs.dateOptions = dateOptionsValid ? dateOptions.map(function (d) { return d.format(); }) : dateOptions;
         }
 

@@ -225,10 +225,10 @@ angular.module('datePicker').factory('datePickerUtils', function () {
         var result = false;
         if (attrs[name]) {
           result = attrs[name].split(',').filter(function(d) {
-        return this.createMoment(d).isValid();
+            return this.createMoment(d).isValid();
           }, this).map(function (fd) {
-        return this.createMoment(fd);
-        , this);
+            return this.createMoment(fd);
+          }, this);
         
         if (!result.length) {
           result = this.findParam(scope, attrs[name]);

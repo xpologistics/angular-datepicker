@@ -121,7 +121,7 @@ var Module = angular.module('datePicker', []);
           if (isSame(scope.date, date)) {
             date = scope.date;
           }
-          if (dateOptions && !dateOptions.some((o) => o.isSame(date, 'day'))) {
+          if (dateOptions && !dateOptions.some(function(o) { return o.isSame(date, 'day'); } )) {
             return false;
           }          
           date = clipDate(date);
@@ -295,7 +295,7 @@ var Module = angular.module('datePicker', []);
             valid &= isSame(maxDate, date);
           }
           if (dateOptions) {
-            valid &= dateOptions.some((o) => o.isSame(date, 'day'));
+            valid &= dateOptions.some(function(o) { return o.isSame(date, 'day'); });
           }
 
           return valid;
